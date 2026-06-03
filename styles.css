@@ -1022,6 +1022,36 @@ textarea {
   text-align: center;
 }
 
+/* Interviewer Rows */
+.interviewer-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-light);
+  border-radius: var(--radius-md);
+}
+
+.interviewer-row .form-row {
+  flex: 1;
+  margin: 0;
+}
+
+.interviewer-row .form-group {
+  margin-bottom: 0;
+}
+
+.btn-remove-interviewer {
+  color: var(--color-error);
+  flex-shrink: 0;
+  margin-top: var(--spacing-xs);
+}
+
+#interviewersContainer {
+  margin-bottom: var(--spacing-sm);
+}
+
 /* Form View Header */
 .form-view-header {
   margin-bottom: var(--spacing-lg);

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recruiting Report - Cordell Hull Foundation</title>
   <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
-  <link rel="stylesheet" href="styles.css?v=2.2.0">
+  <link rel="stylesheet" href="styles.css?v=2.3.0">
 </head>
 <body>
   <div class="app-container">
@@ -149,8 +149,13 @@
           </div>
           <span class="field-error" id="teacherVenuesError"></span>
 
-          <h3 class="section-subheading">References</h3>
-          <p class="field-hint">Note: 2 reference checks are required, preferably at least one with the current or most recent supervisor.</p>
+          <h3 class="section-subheading">Additional School Interviewers</h3>
+          <p class="field-hint">If other school officials also interviewed the teacher, list them here (optional).</p>
+          <div id="interviewersContainer"></div>
+          <button type="button" id="addInterviewerBtn" class="btn-secondary btn-sm">+ Add Interviewer</button>
+
+          <h3 class="section-subheading">Prior Employer References</h3>
+          <p class="field-hint">The visa regulations require schools to check the references of prior employers where J-1 teacher candidates worked in the past. List two interviews or phone calls giving the information of which prior principals or supervisors you communicated with to report on the teacher's previous performance. Preferably include the most recent principal in the school where the teacher worked this past school year.</p>
 
           <div class="reference-card">
             <div class="reference-header"><span class="reference-number">Reference #1</span></div>
@@ -217,11 +222,12 @@
 
           <h3 class="section-subheading">English Assessment</h3>
           <div class="toggle-group">
-            <label class="toggle-label">Is this teacher a native English speaker?</label>
+            <label class="toggle-label">Is English the teacher's native/first language?</label>
             <div class="toggle-switch-container"><label class="toggle-switch"><input type="checkbox" id="nativeEnglishToggle"><span class="toggle-slider"></span></label><span class="toggle-state" id="nativeEnglishLabel">No</span></div>
           </div>
+          <p class="field-hint">Select "No" if the teacher grew up speaking another language, even if they are fluent in English.</p>
           <div id="nonNativeFields">
-            <p class="field-hint">The following questions apply only to non-native English speakers. If the teacher is a native English speaker, toggle the switch above to "Yes" and these questions will not apply.</p>
+            <p class="field-hint">Since the teacher is not a native English speaker, please answer the following:</p>
             <div class="toggle-group">
               <label class="toggle-label">Did a native English speaker test the English-speaking ability of the teacher in the interview process?</label>
               <div class="toggle-switch-container"><label class="toggle-switch"><input type="checkbox" id="nativeTestedToggle"><span class="toggle-slider"></span></label><span class="toggle-state" id="nativeTestedLabel">No</span></div>
@@ -340,6 +346,6 @@
     <div class="progress-modal"><span class="spinner large"></span><p id="generatingStatus">Generating PDF...</p></div>
   </div>
 
-<script type="module" src="main.js?v=2.2.0"></script>
+<script type="module" src="main.js?v=2.3.0"></script>
 </body>
 </html>

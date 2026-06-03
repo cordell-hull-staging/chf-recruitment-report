@@ -35,6 +35,7 @@ function _emptyTeacher() {
     firstName: '', lastName: '', email: '',
     interviewDate: '', interviewPlace: '', interviewCountry: '', interviewLength: '',
     communicationVenues: [], communicationOther: '',
+    additionalInterviewers: [],
     references: [_emptyReference(), _emptyReference()],
     isNativeEnglishSpeaker: false,
     nativeTestedEnglish: false,
@@ -349,6 +350,41 @@ function initTeacherButtons() {
   document.getElementById('saveTeacherBtn').addEventListener('click', saveTeacher);
   document.getElementById('cancelTeacherBtn').addEventListener('click', closeTeacherForm);
   document.getElementById('backToListBtn').addEventListener('click', closeTeacherForm);
+  document.getElementById('addInterviewerBtn').addEventListener('click', _addInterviewer);
+}
+
+// ========================================
+// Additional Interviewers
+// ========================================
+
+let _currentInterviewers = [];
+
+function _renderInterviewers() {
+  const container = document.getElementById('interviewersContainer');
+  container.innerHTML = '';
+  _currentInterviewers.forEach((iv, i) => {
+    const row = document.createElement('div');
+    row.className = 'interviewer-row';
+    row.innerHTML = `
+      <div class="form-row">
+        <div class="form-group"><input type="text" class="iv-name" placeholder="Full name" value="${escapeHtml(iv.name)}"></div>
+        <div class="form-group"><input type="text" class="iv-title" placeholder="Position title" value="${escapeHtml(iv.title)}"></div>
+      </div>
+      <button type="button" class="btn-icon-only btn-remove-interviewer" title="Remove">✕</button>
+    `;
+    row.querySelector('.iv-name').addEventListener('input', (e) => { _currentInterviewers[i].name = e.target.value.trim(); });
+    row.querySelector('.iv-title').addEventListener('input', (e) => { _currentInterviewers[i].title = e.target.value.trim(); });
+    row.querySelector('.btn-remove-interviewer').addEventListener('click', () => {
+      _currentInterviewers.splice(i, 1);
+      _renderInterviewers();
+    });
+    container.appendChild(row);
+  });
+}
+
+function _addInterviewer() {
+  _currentInterviewers.push({ name: '', title: '' });
+  _renderInterviewers();
 }
 
 function _showTableView() {
@@ -494,6 +530,9 @@ function _loadTeacherIntoForm(t) {
   document.getElementById('teacherOtherField').style.display =
     t.communicationVenues.includes('other') ? 'block' : 'none';
 
+  _currentInterviewers = (t.additionalInterviewers || []).map(iv => ({ ...iv }));
+  _renderInterviewers();
+
   for (let r = 0; r < 2; r++) {
     const ref = t.references[r];
     const p = `ref${r + 1}`;
@@ -532,6 +571,7 @@ function _readTeacherFromForm() {
   t.interviewLength = document.getElementById('interviewLength').value.trim();
   t.communicationVenues = _getCheckboxGroup('teacherVenues');
   t.communicationOther = document.getElementById('teacherOtherVenue').value.trim();
+  t.additionalInterviewers = _currentInterviewers.filter(iv => iv.name);
 
   for (let r = 0; r < 2; r++) {
     const ref = t.references[r];
@@ -907,6 +947,10 @@ function renderReview() {
         <div class="review-field"><span class="review-label">Interview Length</span><span class="review-value">${escapeHtml(t.interviewLength)}</span></div>
         <div class="review-field"><span class="review-label">Place</span><span class="review-value">${escapeHtml(_placeCountry(t.interviewPlace, t.interviewCountry))}</span></div>
         <div class="review-field"><span class="review-label">Communication</span><span class="review-value">${escapeHtml(_venueLabels(t.communicationVenues, t.communicationOther))}</span></div>
+        ${(t.additionalInterviewers || []).length > 0 ? `
+          <h4 style="margin: 12px 0 8px; color: var(--color-primary-dark);">Additional School Interviewers</h4>
+          ${t.additionalInterviewers.map(iv => `<div class="review-field"><span class="review-label">${escapeHtml(iv.name)}</span><span class="review-value">${escapeHtml(iv.title)}</span></div>`).join('')}
+        ` : ''}
         ${refHtml}
         <h4 style="margin: 12px 0 8px; color: var(--color-primary-dark);">English Assessment</h4>
         <div class="review-field"><span class="review-label">Native speaker</span><span class="review-value">${t.isNativeEnglishSpeaker ? 'Yes' : 'No'}</span></div>

@@ -17,15 +17,12 @@ export const ORG_CONFIG = {
 
   // Address block (each line is an array element)
   address: [
-    '1701 Pennsylvania Avenue NW',
-    'Suite 200',
-    'Washington, DC 20006'
+    '45 Rockefeller Plaza, Floor 20',
+    'New York, NY 10111'
   ],
 
   // Contact information
-  phone: '(202) 555-0100',
-  email: 'info@cordellhullfoundation.org',
-  website: 'www.cordellhullfoundation.org',
+  website: 'www.cordell-hull.org',
 
   // PDF Document settings
   pdf: {

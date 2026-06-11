@@ -50,8 +50,7 @@ const report = {
   schoolContactLastName: '',
   schoolContactEmail: '',
   teachers: [],
-  relocationCompany: { hired: false, name: '', email: '' },
-  certification: { required: false, link: '', costToTeacher: '' },
+    certification: { required: false, link: '', costToTeacher: '' },
   signature: { imageDataUrl: null, signerName: '', signerTitle: '' }
 };
 
@@ -95,7 +94,6 @@ function _loadFromStorage() {
         { ..._emptyReference(), ...(t.references?.[1] || {}) }
       ]
     }));
-    report.relocationCompany = saved.relocationCompany || { name: '', email: '' };
     report.certification = saved.certification || { link: '', costToTeacher: '' };
     report.signature = saved.signature || { imageDataUrl: null, signerName: '', signerTitle: '' };
     return true;
@@ -203,7 +201,6 @@ async function _handleImport(e) {
     report.schoolContactLastName = data.schoolContactLastName || '';
     report.schoolContactEmail = data.schoolContactEmail || '';
     report.teachers = data.teachers || [];
-    report.relocationCompany = data.relocationCompany || { name: '', email: '' };
     report.certification = data.certification || { link: '', costToTeacher: '' };
     report.signature = { imageDataUrl: null, signerName: '', signerTitle: '' };
 
@@ -224,7 +221,6 @@ function _startFresh() {
   report.schoolContactLastName = '';
   report.schoolContactEmail = '';
   report.teachers = [];
-  report.relocationCompany = { name: '', email: '' };
   report.certification = { link: '', costToTeacher: '' };
   report.signature = { imageDataUrl: null, signerName: '', signerTitle: '' };
   report.date = new Date().toISOString().split('T')[0];
@@ -259,11 +255,6 @@ function _restoreAllFields() {
   document.getElementById('contactFirstName').value = report.schoolContactFirstName;
   document.getElementById('contactLastName').value = report.schoolContactLastName;
   document.getElementById('contactEmail').value = report.schoolContactEmail;
-  document.getElementById('relocationToggle').checked = report.relocationCompany.hired;
-  document.getElementById('relocationFields').style.display = report.relocationCompany.hired ? 'block' : 'none';
-  document.getElementById('relocationToggleLabel').textContent = report.relocationCompany.hired ? 'Yes' : 'No';
-  document.getElementById('relocationName').value = report.relocationCompany.name;
-  document.getElementById('relocationEmail').value = report.relocationCompany.email;
   document.getElementById('certToggle').checked = report.certification.required;
   document.getElementById('certFields').style.display = report.certification.required ? 'block' : 'none';
   document.getElementById('certToggleLabel').textContent = report.certification.required ? 'Yes' : 'No';
@@ -333,9 +324,6 @@ function _syncSchoolFromForm() {
 }
 
 function _syncSharedFromForm() {
-  report.relocationCompany.hired = document.getElementById('relocationToggle').checked;
-  report.relocationCompany.name = document.getElementById('relocationName').value.trim();
-  report.relocationCompany.email = document.getElementById('relocationEmail').value.trim();
   report.certification.required = document.getElementById('certToggle').checked;
   report.certification.link = document.getElementById('certLink').value.trim();
   report.certification.costToTeacher = document.getElementById('certCost').value.trim();
@@ -641,11 +629,6 @@ function initToggles() {
   document.getElementById('nativeTestedToggle').addEventListener('change', () => {
     _updateToggleState('nativeTestedToggle', 'nativeTestedLabel');
   });
-  document.getElementById('relocationToggle').addEventListener('change', () => {
-    const checked = document.getElementById('relocationToggle').checked;
-    document.getElementById('relocationToggleLabel').textContent = checked ? 'Yes' : 'No';
-    document.getElementById('relocationFields').style.display = checked ? 'block' : 'none';
-  });
   document.getElementById('certToggle').addEventListener('change', () => {
     const checked = document.getElementById('certToggle').checked;
     document.getElementById('certToggleLabel').textContent = checked ? 'Yes' : 'No';
@@ -878,10 +861,6 @@ function _validateTeacherForm(t) {
 
 function _validateServices() {
   let valid = true;
-  if (report.relocationCompany.hired) {
-    if (!report.relocationCompany.name) { showError('relocationNameError', 'Required.'); valid = false; } else clearError('relocationNameError');
-    if (!report.relocationCompany.email) { showError('relocationEmailError', 'Required.'); valid = false; } else clearError('relocationEmailError');
-  }
   if (report.certification.required) {
     if (!report.certification.link) { showError('certLinkError', 'Required.'); valid = false; } else clearError('certLinkError');
     if (!report.certification.costToTeacher) { showError('certCostError', 'Required.'); valid = false; } else clearError('certCostError');
@@ -977,12 +956,7 @@ function renderReview() {
     </div>
     ${teacherSections}
     <div class="review-section">
-      <h3>Services & Certification</h3>
-      <div class="review-field"><span class="review-label">Relocation Company Hired</span><span class="review-value">${report.relocationCompany.hired ? 'Yes' : 'No'}</span></div>
-      ${report.relocationCompany.hired ? `
-        <div class="review-field"><span class="review-label">Company Name</span><span class="review-value">${escapeHtml(report.relocationCompany.name)}</span></div>
-        <div class="review-field"><span class="review-label">Company Email</span><span class="review-value">${escapeHtml(report.relocationCompany.email)}</span></div>
-      ` : ''}
+      <h3>Certification</h3>
       <div class="review-field"><span class="review-label">Certification Required</span><span class="review-value">${report.certification.required ? 'Yes (public/charter)' : 'No (private/religious)'}</span></div>
       ${report.certification.required ? `
         <div class="review-field"><span class="review-label">Certification Link</span><span class="review-value">${escapeHtml(report.certification.link)}</span></div>

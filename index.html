@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recruiting Report - Cordell Hull Foundation</title>
   <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
-  <link rel="stylesheet" href="styles.css?v=2.3.0">
+  <link rel="stylesheet" href="styles.css?v=2.4.0">
 </head>
 <body>
   <div class="app-container">
@@ -48,7 +48,7 @@
         </li>
         <li class="progress-step" data-step="3">
           <span class="step-number">3</span>
-          <span class="step-label">Services</span>
+          <span class="step-label">Cert.</span>
         </li>
         <li class="progress-step" data-step="4">
           <span class="step-number">4</span>
@@ -245,28 +245,10 @@
         </div>
       </section>
 
-      <!-- Step 3: Services & Certification -->
+      <!-- Step 3: Certification -->
       <section class="wizard-step" data-step="3">
-        <h2>Services & Certification</h2>
-        <p class="step-description">These sections apply to all teachers in the report.</p>
-
-        <h3 class="section-subheading">Relocation Services</h3>
-        <p class="field-hint">Review suggested or required assistance at <a href="http://www.cordell-hull.org/host-school-responsibilities" target="_blank">www.cordell-hull.org/host-school-responsibilities</a>.</p>
-
-        <div class="toggle-group">
-          <label class="toggle-label">Did you hire a company to provide relocation services?</label>
-          <div class="toggle-switch-container">
-            <label class="toggle-switch">
-              <input type="checkbox" id="relocationToggle">
-              <span class="toggle-slider"></span>
-            </label>
-            <span class="toggle-state" id="relocationToggleLabel">No</span>
-          </div>
-        </div>
-        <div class="conditional-fields" id="relocationFields" style="display: none;">
-          <div class="form-group"><label for="relocationName">Name of Company <span class="required">*</span></label><input type="text" id="relocationName" required><span class="field-error" id="relocationNameError"></span></div>
-          <div class="form-group"><label for="relocationEmail">Contact Email for Company <span class="required">*</span></label><input type="text" id="relocationEmail" required><span class="field-error" id="relocationEmailError"></span></div>
-        </div>
+        <h2>Certification</h2>
+        <p class="step-description">This section applies to all teachers in the report.</p>
 
         <h3 class="section-subheading">Certification Procedures</h3>
 
@@ -346,6 +328,6 @@
     <div class="progress-modal"><span class="spinner large"></span><p id="generatingStatus">Generating PDF...</p></div>
   </div>
 
-<script type="module" src="main.js?v=2.3.0"></script>
+<script type="module" src="main.js?v=2.4.0"></script>
 </body>
 </html>

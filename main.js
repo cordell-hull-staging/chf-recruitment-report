@@ -50,7 +50,7 @@ const report = {
   schoolContactLastName: '',
   schoolContactEmail: '',
   teachers: [],
-    certification: { required: false, link: '', costToTeacher: '' },
+  certification: { required: false, link: '', costToTeacher: '' },
   signature: { imageDataUrl: null, signerName: '', signerTitle: '' }
 };
 

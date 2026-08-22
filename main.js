@@ -18,6 +18,13 @@ const VENUE_OPTIONS = [
   { value: 'other', label: 'Other' }
 ];
 
+// Minimum length for free-text answers that must describe what actually happened.
+const MIN_NARRATIVE_CHARS = 25;
+// Minimum total time a candidate must be interviewed for, across all sessions.
+const MIN_INTERVIEW_MINUTES = 60;
+// Answers used to avoid filling in a field. These are rejected on required fields.
+const PLACEHOLDER_ANSWER_RE = /^(n[\/.\s]?a[.]?|na|none|nil|no|tbd|unknown|not applicable|[-–—.*_?]+)$/i;
+
 // ========================================
 // Application State
 // ========================================
@@ -25,22 +32,66 @@ const VENUE_OPTIONS = [
 function _emptyReference() {
   return {
     name: '', title: '', email: '',
-    interviewLength: '', interviewDate: '', interviewPlace: '', interviewCountry: '',
-    communicationVenues: [], communicationOther: ''
+    interviewMinutes: '', interviewDate: '', interviewTime: '',
+    interviewPlace: '', interviewCountry: '',
+    communicationVenues: [], communicationOther: '',
+    feedback: ''
   };
 }
 
 function _emptyTeacher() {
   return {
     firstName: '', lastName: '', email: '',
-    interviewDate: '', interviewPlace: '', interviewCountry: '', interviewLength: '',
+    interviewDate: '', interviewPlace: '', interviewCountry: '', interviewTotalMinutes: '',
     communicationVenues: [], communicationOther: '',
     additionalInterviewers: [],
+    recruitmentMethod: '', candidateAssessment: '',
     references: [_emptyReference(), _emptyReference()],
     isNativeEnglishSpeaker: false,
     nativeTestedEnglish: false,
     englishTestMinutes: ''
   };
+}
+
+/** Parses legacy free-text durations ("30 min", "1 hour 15 minutes") into minutes. */
+function _parseMinutes(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : '';
+  const str = String(value ?? '').trim();
+  if (!str) return '';
+
+  const hourMatch = str.match(/(\d+(?:[.,]\d+)?)\s*(h|hr|hrs|hour|hours)\b/i);
+  const minMatch = str.match(/(\d+(?:[.,]\d+)?)\s*(m|min|mins|minute|minutes)\b/i);
+  const num = (m) => (m ? parseFloat(m[1].replace(',', '.')) : 0);
+
+  if (hourMatch || minMatch) return Math.round(num(hourMatch) * 60 + num(minMatch));
+
+  const plain = str.match(/\d+(?:[.,]\d+)?/);
+  return plain ? Math.round(parseFloat(plain[0].replace(',', '.'))) : '';
+}
+
+/** Upgrades a teacher saved by an older version to the current shape. */
+function _migrateTeacher(t) {
+  const teacher = { ..._emptyTeacher(), ...(t || {}) };
+
+  if (!teacher.interviewTotalMinutes && t?.interviewLength) {
+    teacher.interviewTotalMinutes = _parseMinutes(t.interviewLength);
+  }
+  delete teacher.interviewLength;
+
+  teacher.communicationVenues = teacher.communicationVenues || [];
+  teacher.additionalInterviewers = teacher.additionalInterviewers || [];
+  teacher.references = [0, 1].map(i => {
+    const saved = t?.references?.[i] || {};
+    const ref = { ..._emptyReference(), ...saved };
+    if (!ref.interviewMinutes && saved.interviewLength) {
+      ref.interviewMinutes = _parseMinutes(saved.interviewLength);
+    }
+    delete ref.interviewLength;
+    ref.communicationVenues = ref.communicationVenues || [];
+    return ref;
+  });
+
+  return teacher;
 }
 
 const report = {
@@ -86,14 +137,7 @@ function _loadFromStorage() {
     report.schoolContactFirstName = saved.schoolContactFirstName || '';
     report.schoolContactLastName = saved.schoolContactLastName || '';
     report.schoolContactEmail = saved.schoolContactEmail || '';
-    report.teachers = (saved.teachers || []).map(t => ({
-      ..._emptyTeacher(),
-      ...t,
-      references: [
-        { ..._emptyReference(), ...(t.references?.[0] || {}) },
-        { ..._emptyReference(), ...(t.references?.[1] || {}) }
-      ]
-    }));
+    report.teachers = (saved.teachers || []).map(_migrateTeacher);
     report.certification = saved.certification || { link: '', costToTeacher: '' };
     report.signature = saved.signature || { imageDataUrl: null, signerName: '', signerTitle: '' };
     return true;
@@ -200,7 +244,7 @@ async function _handleImport(e) {
     report.schoolContactFirstName = data.schoolContactFirstName || '';
     report.schoolContactLastName = data.schoolContactLastName || '';
     report.schoolContactEmail = data.schoolContactEmail || '';
-    report.teachers = data.teachers || [];
+    report.teachers = (data.teachers || []).map(_migrateTeacher);
     report.certification = data.certification || { link: '', costToTeacher: '' };
     report.signature = { imageDataUrl: null, signerName: '', signerTitle: '' };
 
@@ -274,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavigationButtons();
   initSchoolNameListener();
   initVenueCheckboxes();
+  initCharCounters();
   initToggles();
   initSignatureCanvas();
   initTeacherButtons();
@@ -470,9 +515,11 @@ function renderTeacherTable() {
     return;
   }
 
-  const rows = report.teachers.map((t, i) => `
+  const rows = report.teachers.map((t, i) => {
+    const incomplete = Object.keys(_collectTeacherIssues(t)).length > 0;
+    return `
     <tr>
-      <td>${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}</td>
+      <td>${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}${incomplete ? ' <span class="teacher-incomplete" title="Required information is missing">⚠ Incomplete</span>' : ''}</td>
       <td>${escapeHtml(t.email)}</td>
       <td>${escapeHtml(t.interviewDate)}</td>
       <td>${escapeHtml([t.interviewPlace, t.interviewCountry].filter(Boolean).join(', '))}</td>
@@ -481,7 +528,8 @@ function renderTeacherTable() {
         <button type="button" class="btn-icon-only btn-remove-teacher" data-delete="${i}" title="Delete">✕</button>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   container.innerHTML = `
     <div class="review-table-wrapper">
@@ -511,7 +559,9 @@ function _loadTeacherIntoForm(t) {
   document.getElementById('interviewDate').value = t.interviewDate;
   document.getElementById('interviewPlace').value = t.interviewPlace;
   document.getElementById('interviewCountry').value = t.interviewCountry;
-  document.getElementById('interviewLength').value = t.interviewLength;
+  document.getElementById('interviewTotalMinutes').value = t.interviewTotalMinutes;
+  document.getElementById('recruitmentMethod').value = t.recruitmentMethod || '';
+  document.getElementById('candidateAssessment').value = t.candidateAssessment || '';
 
   _setCheckboxGroup('teacherVenues', t.communicationVenues);
   document.getElementById('teacherOtherVenue').value = t.communicationOther;
@@ -528,9 +578,11 @@ function _loadTeacherIntoForm(t) {
     document.getElementById(`${p}Title`).value = ref.title;
     document.getElementById(`${p}Email`).value = ref.email;
     document.getElementById(`${p}Date`).value = ref.interviewDate;
-    document.getElementById(`${p}Length`).value = ref.interviewLength;
+    document.getElementById(`${p}Time`).value = ref.interviewTime || '';
+    document.getElementById(`${p}Minutes`).value = ref.interviewMinutes;
     document.getElementById(`${p}Place`).value = ref.interviewPlace;
     document.getElementById(`${p}Country`).value = ref.interviewCountry;
+    document.getElementById(`${p}Feedback`).value = ref.feedback || '';
     _setCheckboxGroup(`${p}Venues`, ref.communicationVenues);
     document.getElementById(`${p}OtherVenue`).value = ref.communicationOther;
     document.getElementById(`${p}OtherField`).style.display =
@@ -546,6 +598,7 @@ function _loadTeacherIntoForm(t) {
 
   // Clear errors
   document.querySelectorAll('#teacherFormView .field-error').forEach(el => { el.textContent = ''; });
+  _refreshCharCounters();
 }
 
 function _readTeacherFromForm() {
@@ -556,7 +609,9 @@ function _readTeacherFromForm() {
   t.interviewDate = document.getElementById('interviewDate').value.trim();
   t.interviewPlace = document.getElementById('interviewPlace').value.trim();
   t.interviewCountry = document.getElementById('interviewCountry').value.trim();
-  t.interviewLength = document.getElementById('interviewLength').value.trim();
+  t.interviewTotalMinutes = document.getElementById('interviewTotalMinutes').value.trim();
+  t.recruitmentMethod = document.getElementById('recruitmentMethod').value.trim();
+  t.candidateAssessment = document.getElementById('candidateAssessment').value.trim();
   t.communicationVenues = _getCheckboxGroup('teacherVenues');
   t.communicationOther = document.getElementById('teacherOtherVenue').value.trim();
   t.additionalInterviewers = _currentInterviewers.filter(iv => iv.name);
@@ -568,9 +623,11 @@ function _readTeacherFromForm() {
     ref.title = document.getElementById(`${p}Title`).value.trim();
     ref.email = document.getElementById(`${p}Email`).value.trim();
     ref.interviewDate = document.getElementById(`${p}Date`).value.trim();
-    ref.interviewLength = document.getElementById(`${p}Length`).value.trim();
+    ref.interviewTime = document.getElementById(`${p}Time`).value.trim();
+    ref.interviewMinutes = document.getElementById(`${p}Minutes`).value.trim();
     ref.interviewPlace = document.getElementById(`${p}Place`).value.trim();
     ref.interviewCountry = document.getElementById(`${p}Country`).value.trim();
+    ref.feedback = document.getElementById(`${p}Feedback`).value.trim();
     ref.communicationVenues = _getCheckboxGroup(`${p}Venues`);
     ref.communicationOther = document.getElementById(`${p}OtherVenue`).value.trim();
   }
@@ -594,6 +651,31 @@ function _setCheckboxGroup(containerId, values) {
   document.getElementById(containerId).querySelectorAll('input[type="checkbox"]').forEach(cb => {
     cb.checked = values.includes(cb.value);
   });
+}
+
+// ========================================
+// Character Counters
+// ========================================
+
+function _updateCharCounter(textarea) {
+  const counter = document.querySelector(`.char-counter[data-counter-for="${textarea.id}"]`);
+  if (!counter) return;
+  const min = parseInt(textarea.dataset.minChars, 10) || 0;
+  const length = textarea.value.trim().length;
+  const meetsMin = length >= min;
+  counter.textContent = meetsMin ? `${length} characters` : `${length} / ${min} characters minimum`;
+  counter.classList.toggle('char-counter-short', !meetsMin);
+}
+
+function _refreshCharCounters() {
+  document.querySelectorAll('textarea[data-min-chars]').forEach(_updateCharCounter);
+}
+
+function initCharCounters() {
+  document.querySelectorAll('textarea[data-min-chars]').forEach(textarea => {
+    textarea.addEventListener('input', () => _updateCharCounter(textarea));
+  });
+  _refreshCharCounters();
 }
 
 function initVenueCheckboxes() {
@@ -829,34 +911,146 @@ function _validateSchool() {
   return valid;
 }
 
+function _isPlaceholderAnswer(text) {
+  return PLACEHOLDER_ANSWER_RE.test(String(text ?? '').trim());
+}
+
+function _requiredTextIssue(text) {
+  const value = String(text ?? '').trim();
+  if (!value) return 'Required.';
+  if (_isPlaceholderAnswer(value)) return 'Please fill this in — "N/A" is not an acceptable answer.';
+  return null;
+}
+
+function _narrativeIssue(text) {
+  const value = String(text ?? '').trim();
+  const basic = _requiredTextIssue(value);
+  if (basic) return basic;
+  if (value.length < MIN_NARRATIVE_CHARS) {
+    return `Please describe this in at least ${MIN_NARRATIVE_CHARS} characters (currently ${value.length}).`;
+  }
+  return null;
+}
+
+function _minutesIssue(value) {
+  if (String(value ?? '').trim() === '') return 'Required.';
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes) || minutes <= 0) return 'Enter the number of minutes.';
+  return null;
+}
+
+function _listJoin(items) {
+  if (items.length <= 1) return items.join('');
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
+/** Returns a message describing what is missing from a reference, or null if complete. */
+function _referenceIssue(ref, position) {
+  const missing = [];
+  if (_requiredTextIssue(ref.name)) missing.push('name');
+  if (_requiredTextIssue(ref.title)) missing.push('position title');
+  if (_requiredTextIssue(ref.email)) missing.push('email');
+  if (!ref.interviewDate) missing.push('date you spoke to them');
+  if (!ref.interviewTime) missing.push('time of day');
+  if (_minutesIssue(ref.interviewMinutes)) missing.push('length of the reference check');
+  if (_requiredTextIssue(ref.interviewPlace)) missing.push('place of interview');
+  if ((ref.communicationVenues || []).length === 0) missing.push('communication venue');
+
+  if (missing.length > 0) {
+    return `Reference #${position}: please provide the ${_listJoin(missing)}. Every reference must be fully documented.`;
+  }
+
+  const feedbackIssue = _narrativeIssue(ref.feedback);
+  if (feedbackIssue) return `Reference #${position}: ${feedbackIssue} Summarize what you asked and what you were told.`;
+
+  return null;
+}
+
+/**
+ * Collects every validation problem for a teacher as a map of error element id
+ * to message. An empty object means the teacher is fully documented.
+ */
+function _collectTeacherIssues(t) {
+  const issues = {};
+
+  const simpleFields = [
+    ['teacherFirstNameError', t.firstName],
+    ['teacherLastNameError', t.lastName],
+    ['teacherEmailError', t.email],
+    ['interviewPlaceError', t.interviewPlace],
+    ['interviewCountryError', t.interviewCountry]
+  ];
+  for (const [errorId, value] of simpleFields) {
+    const issue = _requiredTextIssue(value);
+    if (issue) issues[errorId] = issue;
+  }
+
+  if (!t.interviewDate) issues.interviewDateError = 'Required.';
+
+  const minutesIssue = _minutesIssue(t.interviewTotalMinutes);
+  if (minutesIssue) {
+    issues.interviewTotalMinutesError = minutesIssue;
+  } else if (Number(t.interviewTotalMinutes) < MIN_INTERVIEW_MINUTES) {
+    issues.interviewTotalMinutesError =
+      `Interviews must total at least ${MIN_INTERVIEW_MINUTES} minutes. You may add up several sessions, but a single short interview is not adequate.`;
+  }
+
+  if ((t.communicationVenues || []).length === 0) issues.teacherVenuesError = 'Select at least one.';
+
+  const recruitmentIssue = _narrativeIssue(t.recruitmentMethod);
+  if (recruitmentIssue) issues.recruitmentMethodError = recruitmentIssue;
+
+  const assessmentIssue = _narrativeIssue(t.candidateAssessment);
+  if (assessmentIssue) issues.candidateAssessmentError = assessmentIssue;
+
+  t.references.forEach((ref, i) => {
+    const issue = _referenceIssue(ref, i + 1);
+    if (issue) issues[`ref${i + 1}Error`] = issue;
+  });
+
+  if (issues.ref1Error || issues.ref2Error) {
+    issues.referencesError = 'Both prior employer references must be checked and fully documented.';
+  }
+
+  return issues;
+}
+
+function _teacherLabel(t, index) {
+  const name = `${t.firstName || ''} ${t.lastName || ''}`.trim();
+  return name ? `#${index + 1} (${name})` : `#${index + 1}`;
+}
+
 function _validateTeacherList() {
   if (report.teachers.length === 0) {
     showError('teacherTableError', 'You must add at least one teacher.');
     return false;
   }
+
+  const incomplete = report.teachers
+    .map((t, i) => (Object.keys(_collectTeacherIssues(t)).length > 0 ? _teacherLabel(t, i) : null))
+    .filter(Boolean);
+
+  if (incomplete.length > 0) {
+    showError('teacherTableError',
+      `Teacher ${_listJoin(incomplete)} ${incomplete.length === 1 ? 'is' : 'are'} incomplete. Open ${incomplete.length === 1 ? 'it' : 'them'} and fill in every required field before continuing.`);
+    renderTeacherTable();
+    return false;
+  }
+
   clearError('teacherTableError');
   return true;
 }
 
 function _validateTeacherForm(t) {
-  let valid = true;
-  if (!t.firstName) { showError('teacherFirstNameError', 'Required.'); valid = false; } else clearError('teacherFirstNameError');
-  if (!t.lastName) { showError('teacherLastNameError', 'Required.'); valid = false; } else clearError('teacherLastNameError');
-  if (!t.email) { showError('teacherEmailError', 'Required.'); valid = false; } else clearError('teacherEmailError');
-  if (!t.interviewDate) { showError('interviewDateError', 'Required.'); valid = false; } else clearError('interviewDateError');
-  if (!t.interviewLength) { showError('interviewLengthError', 'Required.'); valid = false; } else clearError('interviewLengthError');
-  if (!t.interviewPlace) { showError('interviewPlaceError', 'Required.'); valid = false; } else clearError('interviewPlaceError');
-  if (!t.interviewCountry) { showError('interviewCountryError', 'Required.'); valid = false; } else clearError('interviewCountryError');
-  if (t.communicationVenues.length === 0) { showError('teacherVenuesError', 'Select at least one.'); valid = false; } else clearError('teacherVenuesError');
+  const issues = _collectTeacherIssues(t);
 
-  let refsValid = true;
-  for (const ref of t.references) {
-    if (!ref.name || !ref.email) refsValid = false;
-  }
-  if (!refsValid) { showError('referencesError', 'Both references require a name and email.'); valid = false; }
-  else clearError('referencesError');
+  document.querySelectorAll('#teacherFormView .field-error').forEach(el => { el.textContent = ''; });
+  for (const [errorId, message] of Object.entries(issues)) showError(errorId, message);
 
-  return valid;
+  const firstError = document.querySelector('#teacherFormView .field-error:not(:empty)');
+  if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  return Object.keys(issues).length === 0;
 }
 
 function _validateServices() {
@@ -912,10 +1106,11 @@ function renderReview() {
       <h4 style="margin: 12px 0 8px; color: var(--color-primary-dark);">Reference #${ri + 1}</h4>
       <div class="review-field"><span class="review-label">Name</span><span class="review-value">${escapeHtml(ref.name)}${ref.title ? `, ${escapeHtml(ref.title)}` : ''}</span></div>
       <div class="review-field"><span class="review-label">Email</span><span class="review-value">${escapeHtml(ref.email)}</span></div>
-      ${ref.interviewDate ? `<div class="review-field"><span class="review-label">Interview Date</span><span class="review-value">${escapeHtml(ref.interviewDate)}</span></div>` : ''}
-      ${ref.interviewLength ? `<div class="review-field"><span class="review-label">Interview Length</span><span class="review-value">${escapeHtml(ref.interviewLength)}</span></div>` : ''}
+      ${ref.interviewDate ? `<div class="review-field"><span class="review-label">Spoken To On</span><span class="review-value">${escapeHtml([ref.interviewDate, ref.interviewTime].filter(Boolean).join(' at '))}</span></div>` : ''}
+      ${ref.interviewMinutes ? `<div class="review-field"><span class="review-label">Length</span><span class="review-value">${escapeHtml(String(ref.interviewMinutes))} minutes</span></div>` : ''}
       ${(ref.interviewPlace || ref.interviewCountry) ? `<div class="review-field"><span class="review-label">Place</span><span class="review-value">${escapeHtml(_placeCountry(ref.interviewPlace, ref.interviewCountry))}</span></div>` : ''}
       ${ref.communicationVenues.length ? `<div class="review-field"><span class="review-label">Communication</span><span class="review-value">${escapeHtml(_venueLabels(ref.communicationVenues, ref.communicationOther))}</span></div>` : ''}
+      ${ref.feedback ? `<div class="review-field review-field-block"><span class="review-label">What they said</span><span class="review-value">${escapeHtml(ref.feedback)}</span></div>` : ''}
     `).join('');
 
     return `
@@ -923,9 +1118,11 @@ function renderReview() {
         <h3>Teacher ${i + 1}: ${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}</h3>
         <div class="review-field"><span class="review-label">Email</span><span class="review-value">${escapeHtml(t.email)}</span></div>
         <div class="review-field"><span class="review-label">Interview Date</span><span class="review-value">${escapeHtml(t.interviewDate)}</span></div>
-        <div class="review-field"><span class="review-label">Interview Length</span><span class="review-value">${escapeHtml(t.interviewLength)}</span></div>
+        <div class="review-field"><span class="review-label">Total Interview Time</span><span class="review-value">${escapeHtml(String(t.interviewTotalMinutes))} minutes</span></div>
         <div class="review-field"><span class="review-label">Place</span><span class="review-value">${escapeHtml(_placeCountry(t.interviewPlace, t.interviewCountry))}</span></div>
         <div class="review-field"><span class="review-label">Communication</span><span class="review-value">${escapeHtml(_venueLabels(t.communicationVenues, t.communicationOther))}</span></div>
+        <div class="review-field review-field-block"><span class="review-label">How recruited</span><span class="review-value">${escapeHtml(t.recruitmentMethod)}</span></div>
+        <div class="review-field review-field-block"><span class="review-label">How evaluated</span><span class="review-value">${escapeHtml(t.candidateAssessment)}</span></div>
         ${(t.additionalInterviewers || []).length > 0 ? `
           <h4 style="margin: 12px 0 8px; color: var(--color-primary-dark);">Additional School Interviewers</h4>
           ${t.additionalInterviewers.map(iv => `<div class="review-field"><span class="review-label">${escapeHtml(iv.name)}</span><span class="review-value">${escapeHtml(iv.title)}</span></div>`).join('')}

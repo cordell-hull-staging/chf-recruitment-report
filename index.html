@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recruiting Report - Cordell Hull Foundation</title>
   <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
-  <link rel="stylesheet" href="styles.css?v=2.4.0">
+  <link rel="stylesheet" href="styles.css?v=2.5.0">
 </head>
 <body>
   <div class="app-container">
@@ -126,9 +126,10 @@
 
           <h3 class="section-subheading">Interview Details</h3>
           <div class="form-row">
-            <div class="form-group"><label for="interviewDate">Date of Interview <span class="required">*</span></label><input type="date" id="interviewDate" required><span class="field-error" id="interviewDateError"></span></div>
-            <div class="form-group"><label for="interviewLength">Length of Interview <span class="required">*</span></label><input type="text" id="interviewLength" placeholder="e.g., 45 minutes" required><span class="field-error" id="interviewLengthError"></span></div>
+            <div class="form-group"><label for="interviewDate">Date of First Interview <span class="required">*</span></label><input type="date" id="interviewDate" required><span class="field-error" id="interviewDateError"></span></div>
+            <div class="form-group"><label for="interviewTotalMinutes">Total Interview Time (minutes) <span class="required">*</span></label><input type="number" id="interviewTotalMinutes" min="0" step="5" placeholder="e.g., 90" required><span class="field-error" id="interviewTotalMinutesError"></span></div>
           </div>
+          <p class="field-hint">You must interview the teacher for a minimum total of 60 minutes. This does not have to be a single session — add up the time across all interviews you held with the candidate.</p>
           <div class="form-row">
             <div class="form-group"><label for="interviewPlace">Place of Interview <span class="required">*</span></label><input type="text" id="interviewPlace" placeholder="e.g., Zoom, Paris, your school" list="placeList" required><span class="field-error" id="interviewPlaceError"></span></div>
             <div class="form-group"><label for="interviewCountry">Country of Teacher's Citizenship <span class="required">*</span></label><input type="text" id="interviewCountry" list="countryList" placeholder="e.g., France" required><span class="field-error" id="interviewCountryError"></span></div>
@@ -154,6 +155,21 @@
           <div id="interviewersContainer"></div>
           <button type="button" id="addInterviewerBtn" class="btn-secondary btn-sm">+ Add Interviewer</button>
 
+          <h3 class="section-subheading">Recruitment &amp; Assessment</h3>
+          <p class="field-hint">Describe in your own words how this teacher was found and evaluated. These answers are required and must be at least 25 characters — "N/A" is not accepted.</p>
+          <div class="form-group">
+            <label for="recruitmentMethod">How did you recruit this teacher? <span class="required">*</span></label>
+            <textarea id="recruitmentMethod" rows="4" data-min-chars="25" placeholder="Where did the candidate come from (agency, job board, referral, teacher fair, direct application)? Who sourced them and how did you screen the applicants?" required></textarea>
+            <span class="char-counter" data-counter-for="recruitmentMethod"></span>
+            <span class="field-error" id="recruitmentMethodError"></span>
+          </div>
+          <div class="form-group">
+            <label for="candidateAssessment">How did you analyze and evaluate this candidate? <span class="required">*</span></label>
+            <textarea id="candidateAssessment" rows="4" data-min-chars="25" placeholder="How many interviews did you hold and who took part? Did the teacher present a sample class or lesson plan? What did you conclude about their teaching ability and suitability?" required></textarea>
+            <span class="char-counter" data-counter-for="candidateAssessment"></span>
+            <span class="field-error" id="candidateAssessmentError"></span>
+          </div>
+
           <h3 class="section-subheading">Prior Employer References</h3>
           <p class="field-hint">The visa regulations require schools to check the references of prior employers where J-1 teacher candidates worked in the past. List two interviews or phone calls giving the information of which prior principals or supervisors you communicated with to report on the teacher's previous performance. Preferably include the most recent principal in the school where the teacher worked this past school year.</p>
 
@@ -162,18 +178,19 @@
             <div class="reference-fields">
               <div class="form-row">
                 <div class="form-group"><label for="ref1Name">Name <span class="required">*</span></label><input type="text" id="ref1Name" placeholder="Full name" required></div>
-                <div class="form-group"><label for="ref1Title">Position Title</label><input type="text" id="ref1Title" placeholder="Position title"></div>
+                <div class="form-group"><label for="ref1Title">Position Title <span class="required">*</span></label><input type="text" id="ref1Title" placeholder="e.g., Principal, Head of Department" required></div>
               </div>
               <div class="form-group"><label for="ref1Email">Email <span class="required">*</span></label><input type="email" id="ref1Email" placeholder="email@example.com" required></div>
               <div class="form-row">
-                <div class="form-group"><label for="ref1Date">Date of Interview</label><input type="date" id="ref1Date"></div>
-                <div class="form-group"><label for="ref1Length">Length of Interview</label><input type="text" id="ref1Length" placeholder="e.g., 45 minutes"></div>
+                <div class="form-group"><label for="ref1Date">Date You Spoke to This Reference <span class="required">*</span></label><input type="date" id="ref1Date" required></div>
+                <div class="form-group"><label for="ref1Time">Time of Day <span class="required">*</span></label><input type="time" id="ref1Time" required></div>
               </div>
               <div class="form-row">
-                <div class="form-group"><label for="ref1Place">Place of Interview</label><input type="text" id="ref1Place" placeholder="e.g., Zoom, Paris, your school" list="placeList"></div>
-                <div class="form-group"><label for="ref1Country">Country of Teacher's Citizenship</label><input type="text" id="ref1Country" list="countryList" placeholder="e.g., France"></div>
+                <div class="form-group"><label for="ref1Minutes">Length of Reference Check (minutes) <span class="required">*</span></label><input type="number" id="ref1Minutes" min="0" step="5" placeholder="e.g., 20" required></div>
+                <div class="form-group"><label for="ref1Place">Place of Interview <span class="required">*</span></label><input type="text" id="ref1Place" placeholder="e.g., Zoom, Paris, your school" list="placeList" required></div>
               </div>
-              <h4 class="section-subheading-sm">Communication Venue</h4>
+              <div class="form-group"><label for="ref1Country">Country of Reference</label><input type="text" id="ref1Country" list="countryList" placeholder="e.g., France"></div>
+              <h4 class="section-subheading-sm">Communication Venue <span class="required">*</span></h4>
               <div class="checkbox-group" id="ref1Venues">
                 <label class="checkbox-item"><input type="checkbox" value="telephone"> Telephone</label>
                 <label class="checkbox-item"><input type="checkbox" value="email"> Email</label>
@@ -185,6 +202,12 @@
               <div class="conditional-fields" id="ref1OtherField" style="display: none;">
                 <div class="form-group"><label for="ref1OtherVenue">Please specify</label><textarea id="ref1OtherVenue" rows="2"></textarea></div>
               </div>
+              <div class="form-group">
+                <label for="ref1Feedback">What did this reference say about the teacher? <span class="required">*</span></label>
+                <textarea id="ref1Feedback" rows="4" data-min-chars="25" placeholder="Summarize what you asked and what you were told about the teacher's performance, reliability and classroom ability." required></textarea>
+                <span class="char-counter" data-counter-for="ref1Feedback"></span>
+              </div>
+              <span class="field-error" id="ref1Error"></span>
             </div>
           </div>
 
@@ -193,18 +216,19 @@
             <div class="reference-fields">
               <div class="form-row">
                 <div class="form-group"><label for="ref2Name">Name <span class="required">*</span></label><input type="text" id="ref2Name" placeholder="Full name" required></div>
-                <div class="form-group"><label for="ref2Title">Position Title</label><input type="text" id="ref2Title" placeholder="Position title"></div>
+                <div class="form-group"><label for="ref2Title">Position Title <span class="required">*</span></label><input type="text" id="ref2Title" placeholder="e.g., Principal, Head of Department" required></div>
               </div>
               <div class="form-group"><label for="ref2Email">Email <span class="required">*</span></label><input type="email" id="ref2Email" placeholder="email@example.com" required></div>
               <div class="form-row">
-                <div class="form-group"><label for="ref2Date">Date of Interview</label><input type="date" id="ref2Date"></div>
-                <div class="form-group"><label for="ref2Length">Length of Interview</label><input type="text" id="ref2Length" placeholder="e.g., 45 minutes"></div>
+                <div class="form-group"><label for="ref2Date">Date You Spoke to This Reference <span class="required">*</span></label><input type="date" id="ref2Date" required></div>
+                <div class="form-group"><label for="ref2Time">Time of Day <span class="required">*</span></label><input type="time" id="ref2Time" required></div>
               </div>
               <div class="form-row">
-                <div class="form-group"><label for="ref2Place">Place of Interview</label><input type="text" id="ref2Place" placeholder="e.g., Zoom, Paris, your school" list="placeList"></div>
-                <div class="form-group"><label for="ref2Country">Country of Teacher's Citizenship</label><input type="text" id="ref2Country" list="countryList" placeholder="e.g., France"></div>
+                <div class="form-group"><label for="ref2Minutes">Length of Reference Check (minutes) <span class="required">*</span></label><input type="number" id="ref2Minutes" min="0" step="5" placeholder="e.g., 20" required></div>
+                <div class="form-group"><label for="ref2Place">Place of Interview <span class="required">*</span></label><input type="text" id="ref2Place" placeholder="e.g., Zoom, Paris, your school" list="placeList" required></div>
               </div>
-              <h4 class="section-subheading-sm">Communication Venue</h4>
+              <div class="form-group"><label for="ref2Country">Country of Reference</label><input type="text" id="ref2Country" list="countryList" placeholder="e.g., France"></div>
+              <h4 class="section-subheading-sm">Communication Venue <span class="required">*</span></h4>
               <div class="checkbox-group" id="ref2Venues">
                 <label class="checkbox-item"><input type="checkbox" value="telephone"> Telephone</label>
                 <label class="checkbox-item"><input type="checkbox" value="email"> Email</label>
@@ -216,6 +240,12 @@
               <div class="conditional-fields" id="ref2OtherField" style="display: none;">
                 <div class="form-group"><label for="ref2OtherVenue">Please specify</label><textarea id="ref2OtherVenue" rows="2"></textarea></div>
               </div>
+              <div class="form-group">
+                <label for="ref2Feedback">What did this reference say about the teacher? <span class="required">*</span></label>
+                <textarea id="ref2Feedback" rows="4" data-min-chars="25" placeholder="Summarize what you asked and what you were told about the teacher's performance, reliability and classroom ability." required></textarea>
+                <span class="char-counter" data-counter-for="ref2Feedback"></span>
+              </div>
+              <span class="field-error" id="ref2Error"></span>
             </div>
           </div>
           <span class="field-error" id="referencesError"></span>
@@ -328,6 +358,6 @@
     <div class="progress-modal"><span class="spinner large"></span><p id="generatingStatus">Generating PDF...</p></div>
   </div>
 
-<script type="module" src="main.js?v=2.4.0"></script>
+<script type="module" src="main.js?v=2.5.0"></script>
 </body>
 </html>

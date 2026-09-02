@@ -1109,10 +1109,6 @@ textarea {
 }
 
 
-#interviewersContainer {
-  margin-bottom: var(--spacing-sm);
-}
-
 /* Form View Header */
 .form-view-header {
   margin-bottom: var(--spacing-lg);

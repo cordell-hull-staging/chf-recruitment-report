@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recruiting Report - Cordell Hull Foundation</title>
   <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
-  <link rel="stylesheet" href="styles.css?v=2.6.1">
+  <link rel="stylesheet" href="styles.css?v=2.6.2">
 </head>
 <body>
   <div class="app-container">
@@ -127,9 +127,9 @@
 
           <h3 class="section-subheading">Interviews</h3>
           <p class="field-hint">Teachers are normally interviewed more than once, by different members of staff and in different ways. Give each interview its own line: who from your school took part, when it took place, how long it lasted, and where or how it was held.</p>
+          <p class="field-hint requirement-note">The interviews must add up to at least 60 minutes in total, and must name every member of school staff who interviewed the teacher and how long each of them spent with the candidate.</p>
           <div id="interviewsContainer"></div>
           <button type="button" id="addInterviewBtn" class="btn-secondary btn-sm">+ Add another interview</button>
-          <p class="field-hint requirement-note">The interviews must add up to at least 60 minutes in total, and must name every member of school staff who interviewed the teacher and how long each of them spent with the candidate.</p>
           <p class="interview-total" id="interviewTotal"></p>
           <span class="field-error" id="interviewsError"></span>
 
@@ -269,11 +269,11 @@
           <span class="field-error" id="referencesError"></span>
 
           <h3 class="section-subheading">English Assessment</h3>
+          <p class="field-hint">Select "No" if the teacher grew up speaking another language, even if they are fluent in English.</p>
           <div class="toggle-group">
             <label class="toggle-label">Is English the teacher's native/first language?</label>
             <div class="toggle-switch-container"><label class="toggle-switch"><input type="checkbox" id="nativeEnglishToggle"><span class="toggle-slider"></span></label><span class="toggle-state" id="nativeEnglishLabel">No</span></div>
           </div>
-          <p class="field-hint">Select "No" if the teacher grew up speaking another language, even if they are fluent in English.</p>
           <div id="nonNativeFields">
             <p class="field-hint">Since the teacher is not a native English speaker, please answer the following:</p>
             <div class="toggle-group">
@@ -376,6 +376,6 @@
     <div class="progress-modal"><span class="spinner large"></span><p id="generatingStatus">Generating PDF...</p></div>
   </div>
 
-<script type="module" src="main.js?v=2.6.1"></script>
+<script type="module" src="main.js?v=2.6.2"></script>
 </body>
 </html>

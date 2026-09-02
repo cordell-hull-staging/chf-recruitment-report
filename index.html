@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recruiting Report - Cordell Hull Foundation</title>
   <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
-  <link rel="stylesheet" href="styles.css?v=2.6.0">
+  <link rel="stylesheet" href="styles.css?v=2.6.1">
 </head>
 <body>
   <div class="app-container">
@@ -210,7 +210,11 @@
                 <label class="checkbox-item"><input type="checkbox" value="other"> Other</label>
               </div>
               <div class="conditional-fields" id="ref1OtherField" style="display: none;">
-                <div class="form-group"><label for="ref1OtherVenue">Please specify</label><textarea id="ref1OtherVenue" rows="2"></textarea></div>
+                <div class="form-group">
+                  <label for="ref1OtherVenue">Please specify <span class="required">*</span></label>
+                  <textarea id="ref1OtherVenue" rows="2" data-min-chars="25" placeholder="Describe the other venue"></textarea>
+                  <span class="char-counter" data-counter-for="ref1OtherVenue"></span>
+                </div>
               </div>
               <div class="form-group">
                 <label for="ref1Feedback">What did this reference say about the teacher? <span class="required">*</span></label>
@@ -248,7 +252,11 @@
                 <label class="checkbox-item"><input type="checkbox" value="other"> Other</label>
               </div>
               <div class="conditional-fields" id="ref2OtherField" style="display: none;">
-                <div class="form-group"><label for="ref2OtherVenue">Please specify</label><textarea id="ref2OtherVenue" rows="2"></textarea></div>
+                <div class="form-group">
+                  <label for="ref2OtherVenue">Please specify <span class="required">*</span></label>
+                  <textarea id="ref2OtherVenue" rows="2" data-min-chars="25" placeholder="Describe the other venue"></textarea>
+                  <span class="char-counter" data-counter-for="ref2OtherVenue"></span>
+                </div>
               </div>
               <div class="form-group">
                 <label for="ref2Feedback">What did this reference say about the teacher? <span class="required">*</span></label>
@@ -368,6 +376,6 @@
     <div class="progress-modal"><span class="spinner large"></span><p id="generatingStatus">Generating PDF...</p></div>
   </div>
 
-<script type="module" src="main.js?v=2.6.0"></script>
+<script type="module" src="main.js?v=2.6.1"></script>
 </body>
 </html>

@@ -1117,6 +1117,16 @@ function _referenceIssue(ref, position) {
     return `Reference #${position}: please provide the ${_listJoin(missing)}. Every reference must be fully documented.`;
   }
 
+  if ((ref.communicationVenues || []).includes('other')) {
+    const other = String(ref.communicationOther ?? '').trim();
+    if (_requiredTextIssue(other)) {
+      return `Reference #${position}: describe the other venue you used to reach them.`;
+    }
+    if (other.length < MIN_NARRATIVE_CHARS) {
+      return `Reference #${position}: describe the other venue in at least ${MIN_NARRATIVE_CHARS} characters (currently ${other.length}).`;
+    }
+  }
+
   const feedbackIssue = _narrativeIssue(ref.feedback);
   if (feedbackIssue) return `Reference #${position}: ${feedbackIssue} Summarize what you asked and what you were told.`;
 

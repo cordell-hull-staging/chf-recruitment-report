@@ -322,6 +322,7 @@ input[type="text"],
 input[type="number"],
 input[type="email"],
 input[type="date"],
+input[type="time"],
 select,
 textarea {
   width: 100%;
@@ -352,6 +353,30 @@ textarea.invalid {
 textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+.char-counter {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
+.char-counter-short {
+  color: var(--color-error);
+}
+
+.teacher-incomplete {
+  display: inline-block;
+  margin-left: var(--spacing-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-error);
+  background-color: rgba(200, 32, 32, 0.1);
+  white-space: nowrap;
 }
 
 .form-row {
@@ -722,6 +747,18 @@ textarea {
   flex: 1;
 }
 
+.review-field-block {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.review-field-block .review-value {
+  text-align: left;
+  font-weight: 400;
+  white-space: pre-wrap;
+}
+
 /* Review Summary Table */
 .review-table-wrapper {
   overflow-x: auto;
@@ -1023,34 +1060,54 @@ textarea {
 }
 
 /* Interviewer Rows */
-.interviewer-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+.interview-row {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
   background-color: var(--color-bg-light);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }
 
-.interviewer-row .form-row {
-  flex: 1;
-  margin: 0;
-}
-
-.interviewer-row .form-group {
-  margin-bottom: 0;
-}
-
-.btn-remove-interviewer {
-  color: var(--color-error);
-  flex-shrink: 0;
-  margin-top: var(--spacing-xs);
-}
-
-#interviewersContainer {
+.interview-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--spacing-sm);
 }
+
+.interview-number {
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.interview-row .form-group {
+  margin-bottom: var(--spacing-sm);
+}
+
+.venue-label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+}
+
+.btn-remove-interview {
+  color: var(--color-error);
+  flex-shrink: 0;
+}
+
+.requirement-note {
+  font-weight: 600;
+}
+
+.interview-total {
+  margin: var(--spacing-xs) 0 0;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.interview-total-short {
+  color: var(--color-error);
+}
+
 
 /* Form View Header */
 .form-view-header {

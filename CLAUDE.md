@@ -32,6 +32,8 @@ Version is defined in `config/version.js` as the single source of truth. It is d
 
 All report data is saved to `localStorage` under key `chf-recruitment-data` — on every step transition, teacher save, and every 30 seconds via auto-save. On page load, if saved data exists, a landing screen offers "Continue" or "Start New Report" (with confirmation). Data persists across sessions and PDF downloads — only cleared when user explicitly starts a new report. Signature canvas data is stored as a data URL.
 
+The landing screen also has an "Import from PDF" control, currently **hidden** via inline `display: none` on the label and its divider in `index.html`. The file input, its change handler and `importReportFromPDF()` are all intact — unhide those two elements to bring it back.
+
 ## Multi-Teacher Flow
 
 Step 2 (Teachers) uses a table/form toggle pattern:

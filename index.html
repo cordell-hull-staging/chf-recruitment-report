@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recruiting Report - Cordell Hull Foundation</title>
   <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
-  <link rel="stylesheet" href="styles.css?v=2.6.3">
+  <link rel="stylesheet" href="styles.css?v=2.6.4">
 </head>
 <body>
   <div class="app-container">
@@ -28,8 +28,9 @@
         <div class="landing-actions">
           <button type="button" id="continueBtn" class="btn-primary btn-large">Continue</button>
           <button type="button" id="startNewBtn" class="btn-secondary">Start New Report</button>
-          <div class="landing-divider"><span>or</span></div>
-          <label class="btn-secondary btn-import" for="importPdfInput">Import from PDF</label>
+          <!-- Import is hidden from schools but kept working: unhide these two to restore it. -->
+          <div class="landing-divider" style="display: none;"><span>or</span></div>
+          <label class="btn-secondary btn-import" for="importPdfInput" style="display: none;">Import from PDF</label>
           <input type="file" id="importPdfInput" accept=".pdf" style="display: none;">
         </div>
         <p class="field-error" id="importError"></p>
@@ -376,6 +377,6 @@
     <div class="progress-modal"><span class="spinner large"></span><p id="generatingStatus">Generating PDF...</p></div>
   </div>
 
-<script type="module" src="main.js?v=2.6.3"></script>
+<script type="module" src="main.js?v=2.6.4"></script>
 </body>
 </html>
